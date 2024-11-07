@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catch the Falling Objects Game</title>
+    <style>
+        body, html {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        #gameCanvas {
+            background-color: #87CEEB;
+            border: 2px solid #333;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas" width="400" height="600"></canvas>
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+
+        // Player properties
+        const player = { x: 200, y: 550, width: 50, height: 50, color: "#FFD700", speed: 10 };
+
+        // Falling object properties
+        const objects = [];
+        const objectWidth = 30;
+        const objectHeight = 30;
+        let objectTimer = 0;
+        let score = 0;
+
+        // Key event listeners
+        document.addEventListener("keydown", (e) => {
+            if (e.code === "ArrowLeft" && player.x > 0) {
+                player.x -= player.speed;
+            }
+            if (e.code === "ArrowRight" && player.x + player.width < canvas.width) {
+                player.x += player.speed;
+            }
+        });
+
+        function spawnObject() {
+            const objectX = Math.random() * (canvas.width - objectWidth);
+            objects.push({ x: objectX, y: 0, width: objectWidth, height: objectHeight, color: "#FF4500" });
+        }
+
+        function updateObjects() {
+            for (let i = 0; i < objects.length; i++) {
+                const obj = objects[i];
+                obj.y += 5;
+
+                // Collision detection
+                if (
+                    player.x < obj.x + obj.width &&
+                    player.x + player.width > obj.x &&
+                    player.y < obj.y + obj.height &&
+                    player.y + player.height > obj.y
+                ) {
+                    objects.splice(i, 1);
+                    score++;
+                } else if (obj.y > canvas.height) {
+                    objects.splice(i, 1);
+                }
+            }
+
+            // Spawn new object periodically
+            objectTimer++;
+            if (objectTimer % 30 === 0) {
+                spawnObject();
+            }
+        }
+
+        function drawPlayer() {
+            ctx.fillStyle = player.color;
+            ctx.fillRect(player.x, player.y, player.width, player.height);
+        }
+
+        function drawObjects() {
+            for (const obj of objects) {
+                ctx.fillStyle = obj.color;
+                ctx.fillRect(obj.x, obj.y, obj.width, obj.height);
+            }
+        }
+
+        function drawScore() {
+            ctx.fillStyle = "#000";
+            ctx.font = "20px Arial";
+            ctx.fillText("Score: " + score, 10, 30);
+        }
+
+        function gameLoop() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            updateObjects();
+            drawPlayer();
+            drawObjects();
+            drawScore();
+            requestAnimationFrame(gameLoop);
+        }
+
+        gameLoop();
+    </script>
+</body>
+</html>
